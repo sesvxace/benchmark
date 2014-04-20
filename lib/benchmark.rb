@@ -11,7 +11,43 @@
 # 
 # Usage
 # -----------------------------------------------------------------------------
-#   TODO: Document usage of the script.
+#   This script is intended to be used entirely through the benchmarking method
+# `SES::Benchmark.measure`. This method takes the number of iterations to run
+# the passed block as an argument -- if no argument is given, the block is run
+# `SES::Benchmark.iterations` times (10,000 by default, though this can be
+# redefined in the configuration area or during runtime). For example, we could
+# measure `Array#pop` 100,000 times like so:
+# 
+#     SES::Benchmark.measure(100_000) { [1, 2, 3].pop }
+# 
+#   The `SES::Benchmark.measure` method can also report on any number of ways
+# to potentially run code -- very useful for benchmarking alternative methods
+# of attaining the same result. To do so, simply pass a block that takes a
+# single argument; the argument passed yields a `Reporter` instance with the
+# `report` method. For example, this is how we could benchmark `Array#sort`
+# versus `Array#sort!`:
+# 
+#     SES::Benchmark.measure do |x|
+#       a = (1..100).to_a.shuffle!
+#       x.report('Array#sort')  { a.sort  }
+#       x.report('Array#sort!') { a.sort! }
+#     end
+# 
+#   **NOTE:** Reports are executed in the order that they are given -- running
+# the code above with the `report` calls switched would produce misleading
+# results. (Labels for reports are also optional, but *highly* recommended.)
+# 
+#   In addition to this, you may run individual reports a different number of
+# times than the other reports in a `measure` block. For instance, we could
+# default to running iterations 100,000 times while running a single report
+# for 200,000 like so (using the previous example):
+# 
+#     SES::Benchmark.iterations = 100_000
+#     SES::Benchmark.measure do |x|
+#       a = (1..100).to_a.shuffle!
+#       x.report('Array#sort')           { a.sort  }
+#       x.report('Array#sort!', 200_000) { a.sort! }
+#     end
 # 
 # License
 # -----------------------------------------------------------------------------
@@ -53,11 +89,15 @@ module SES
       attr_reader   :format
     end
     
+    # Provides formatting for benchmark results. The `:footer`, `:label`, and
+    # `:report` strings are run through `sprintf` with specific arguments --
+    # keep this in mind if you are modifying the output formatting. Also note
+    # that the `:footer` is automatically right-justified to `WIDTH` columns.
     @format = {
       :header    => '---- BENCHMARK ' << '-' * (WIDTH - 15),
       :footer    => 'TOTAL: %f (%s seconds)',
       :label     => '%s:',
-      :report    => "  Process: %f\n  Real: %s seconds",
+      :report    => "  Process: %f\n  Real:    %s seconds",
       :separator => '-' * WIDTH,
     }
     
@@ -66,13 +106,16 @@ module SES
     # =========================================================================
     # Provides reporting for individual benchmarks.
     class Reporter
-      def initialize() @total = [0, 0] end
+      def initialize(iterate = SES::Benchmark.iterations)
+        @iterations = iterate
+        @total      = [0, 0]
+      end
       
       # Runs the given block `iterate` times, measuring performance and writing
       # formatted information to standard output. This method also keeps track
       # of the total running times of all reports run on this Reporter instance
-      # (and returns this information).
-      def report(label = nil, iterate = SES::Benchmark.iterations)
+      # and returns this information.
+      def report(label = nil, iterate = @iterations)
         puts sprintf(Benchmark.format[:label], label) unless label.nil?
         result = Benchmark.time(iterate) { yield }
         puts sprintf(Benchmark.format[:report], *result)
@@ -86,7 +129,7 @@ module SES
     # block is simply called `iterate` times and reported.
     def self.measure(iterate = @iterations, &block)
       puts @format[:header]
-      reporter = Reporter.new
+      reporter = Reporter.new(iterate)
       result = if block.arity.nonzero?
         yield reporter
       else time(iterate) { yield } end

@@ -139,9 +139,9 @@ module SES
     
     class << self
       private
-      # Measures the amount of processing time and real time taken for the passed
-      # block to operate the given number of iterations. Returns an array with
-      # the following elements:
+      # Measures the amount of processing time and real time taken for the
+      # passed block to operate the given number of iterations. Returns an
+      # array with the following elements:
       #     [user processing time, real time]
       def time(iterate = @iterations)
         initial = [Process.times.utime, Time.now]

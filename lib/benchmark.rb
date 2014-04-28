@@ -137,15 +137,18 @@ module SES
       puts sprintf(@format[:footer], *result).rjust(WIDTH)
     end
     
-    # Measures the amount of processing time and real time taken for the passed
-    # block to operate the given number of iterations. Returns an array with
-    # the following elements:
-    #     [user processing time, real time]
-    def self.time(iterate = @iterations)
-      initial = [Process.times.utime, Time.now]
-      iterate.times { yield }
-      [Process.times.utime, Time.now].map!.with_index do |time, index|
-        time - initial[index]
+    class << self
+      private
+      # Measures the amount of processing time and real time taken for the passed
+      # block to operate the given number of iterations. Returns an array with
+      # the following elements:
+      #     [user processing time, real time]
+      def time(iterate = @iterations)
+        initial = [Process.times.utime, Time.now]
+        iterate.times { yield }
+        [Process.times.utime, Time.now].map!.with_index do |time, index|
+          time - initial[index]
+        end
       end
     end
     

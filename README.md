@@ -1,5 +1,5 @@
 
-Benchmark v1.0 by Solistra
+Benchmark v1.1 by Solistra
 =============================================================================
 
 Summary

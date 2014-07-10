@@ -1,5 +1,5 @@
 #--
-# Benchmark v1.0 by Solistra
+# Benchmark v1.1 by Solistra
 # =============================================================================
 # 
 # Summary
@@ -62,8 +62,11 @@
 # not require the SES Core (v2.0), but it is recommended.
 # 
 #++
+
+# SES
+# =============================================================================
+# The top-level namespace for all SES scripts.
 module SES
-  # ===========================================================================
   # Benchmark
   # ===========================================================================
   # Provides benchmarking tools for measuring code performance in both real
@@ -85,7 +88,12 @@ module SES
     # END CONFIGURATION
     # =========================================================================
     class << self
+      # The number of iterations to run blocks of code by default.
+      # @return [FixNum]
       attr_accessor :iterations
+      
+      # Formatting styles for benchmark reports.
+      # @return [Hash{Symbol => String}]
       attr_reader   :format
     end
     
@@ -94,18 +102,20 @@ module SES
     # keep this in mind if you are modifying the output formatting. Also note
     # that the `:footer` is automatically right-justified to `WIDTH` columns.
     @format = {
-      :header    => '---- BENCHMARK ' << '-' * (WIDTH - 15),
-      :footer    => 'TOTAL: %f (%s seconds)',
-      :label     => '%s:',
-      :report    => "  Process: %f\n  Real:    %s seconds",
-      :separator => '-' * WIDTH,
+      header:    '---- BENCHMARK ' << '-' * (WIDTH - 15),
+      footer:    'TOTAL: %f (%s seconds)',
+      label:     '%s:',
+      report:    "  Process: %f\n  Real:    %s seconds",
+      separator: '-' * WIDTH,
     }
     
-    # =========================================================================
     # Reporter
     # =========================================================================
     # Provides reporting for individual benchmarks.
     class Reporter
+      # Creates a new {Reporter} instance.
+      # 
+      # @return [Reporter] the new instance
       def initialize(iterate = SES::Benchmark.iterations)
         @iterations = iterate
         @total      = [0, 0]
@@ -115,9 +125,13 @@ module SES
       # formatted information to standard output. This method also keeps track
       # of the total running times of all reports run on this Reporter instance
       # and returns this information.
+      # 
+      # @param label [String, nil] the label for this report
+      # @param iterate [FixNum] number of times to iterate over the given block
+      # @return [Array<Float>] the total running time of all reports
       def report(label = nil, iterate = @iterations)
         puts sprintf(Benchmark.format[:label], label) unless label.nil?
-        result = Benchmark.time(iterate) { yield }
+        result = Benchmark.send(:time, iterate) { yield }
         puts sprintf(Benchmark.format[:report], *result)
         @total.map!.with_index { |t, i| t += result[i] }
       end
@@ -127,12 +141,17 @@ module SES
     # block in order to function. Giving any arguments to the block creates a
     # new Reporter instance which is then yielded to the block; otherwise, the
     # block is simply called `iterate` times and reported.
+    # 
+    # @param iterate [FixNum] number of times to iterate over the given block
+    # @return [void]
     def self.measure(iterate = @iterations, &block)
       puts @format[:header]
       reporter = Reporter.new(iterate)
       result = if block.arity.nonzero?
         yield reporter
-      else time(iterate) { yield } end
+      else
+        time(iterate) { yield }
+      end
       puts @format[:separator] if block.arity.nonzero?
       puts sprintf(@format[:footer], *result).rjust(WIDTH)
     end
@@ -140,9 +159,11 @@ module SES
     class << self
       private
       # Measures the amount of processing time and real time taken for the
-      # passed block to operate the given number of iterations. Returns an
-      # array with the following elements:
-      #     [user processing time, real time]
+      # passed block to operate the given number of iterations.
+      # 
+      # @param iterate [FixNum] the number of times to measure the given block
+      # @return [Array<Float>] array of processing times; first element is
+      #   processing time, second element is real time
       def time(iterate = @iterations)
         initial = [Process.times.utime, Time.now]
         iterate.times { yield }
@@ -154,7 +175,8 @@ module SES
     
     # Register this script with the SES Core if it exists.
     if SES.const_defined?(:Register)
-      Description = Script.new(:Benchmark, 1.0)
+      # Script metadata.
+      Description = Script.new(:Benchmark, 1.1)
       Register.enter(Description)
     end
   end

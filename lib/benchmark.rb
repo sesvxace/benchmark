@@ -176,7 +176,7 @@ module SES
     # Register this script with the SES Core if it exists.
     if SES.const_defined?(:Register)
       # Script metadata.
-      Description = Script.new(:Benchmark, 1.1)
+      Description = Script.new(:Benchmark, 1.1, :Solistra)
       Register.enter(Description)
     end
   end

@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; SES Benchmark Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.README.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'>
+<h1 id="label-Benchmark+v1.0+by+Solistra">Benchmark v1.0 by Solistra</h1>
+
+<h2 id="label-Summary">Summary</h2>
+
+<p>This script provides a simple benchmarking tool similar to the Benchmark
+module present in the Ruby standard library. Essentially, this script
+allows you to run specified code and objectively determine its execution
+speed. This is primarily a scripter&#39;s tool.</p>
+
+<h2 id="label-Usage">Usage</h2>
+
+<p>This script is intended to be used entirely through the benchmarking method
+<code>SES::Benchmark.measure</code>. This method takes the number of
+iterations to run the passed block as an argument – if no argument is
+given, the block is run <code>SES::Benchmark.iterations</code> times
+(10,000 by default, though this can be redefined in the configuration area
+or during runtime). For example, we could measure <code>Array#pop</code>
+100,000 times like so:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>SES</span><span class='op'>::</span><span class='const'>Benchmark</span><span class='period'>.</span><span class='id identifier rubyid_measure'>measure</span><span class='lparen'>(</span><span class='int'>100_000</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span> <span class='int'>2</span><span class='comma'>,</span> <span class='int'>3</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='rbrace'>}</span></code></pre>
+
+<p>The <code>SES::Benchmark.measure</code> method can also report on any
+number of ways to potentially run code – very useful for benchmarking
+alternative methods of attaining the same result. To do so, simply pass a
+block that takes a single argument; the argument passed yields a
+<code>Reporter</code> instance with the <code>report</code> method. For
+example, this is how we could benchmark <code>Array#sort</code> versus
+<code>Array#sort!</code>:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>SES</span><span class='op'>::</span><span class='const'>Benchmark</span><span class='period'>.</span><span class='id identifier rubyid_measure'>measure</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_x'>x</span><span class='op'>|</span>
+  <span class='id identifier rubyid_a'>a</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='int'>1</span><span class='op'>..</span><span class='int'>100</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_shuffle!'>shuffle!</span>
+  <span class='id identifier rubyid_x'>x</span><span class='period'>.</span><span class='id identifier rubyid_report'>report</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Array#sort</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>  <span class='lbrace'>{</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_sort'>sort</span>  <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_x'>x</span><span class='period'>.</span><span class='id identifier rubyid_report'>report</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Array#sort!</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_sort!'>sort!</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p><strong>NOTE:</strong> Reports are executed in the order that they are
+given – running the code above with the <code>report</code> calls switched
+would produce misleading results. (Labels for reports are also optional,
+but <em>highly</em> recommended.)</p>
+
+<p>In addition to this, you may run individual reports a different number of
+times than the other reports in a <code>measure</code> block. For instance,
+we could default to running iterations 100,000 times while running a single
+report for 200,000 like so (using the previous example):</p>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>SES</span><span class='op'>::</span><span class='const'>Benchmark</span><span class='period'>.</span><span class='id identifier rubyid_iterations'>iterations</span> <span class='op'>=</span> <span class='int'>100_000</span>
+<span class='const'>SES</span><span class='op'>::</span><span class='const'>Benchmark</span><span class='period'>.</span><span class='id identifier rubyid_measure'>measure</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_x'>x</span><span class='op'>|</span>
+  <span class='id identifier rubyid_a'>a</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='int'>1</span><span class='op'>..</span><span class='int'>100</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_shuffle!'>shuffle!</span>
+  <span class='id identifier rubyid_x'>x</span><span class='period'>.</span><span class='id identifier rubyid_report'>report</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Array#sort</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>           <span class='lbrace'>{</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_sort'>sort</span>  <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_x'>x</span><span class='period'>.</span><span class='id identifier rubyid_report'>report</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Array#sort!</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='int'>200_000</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_sort!'>sort!</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<h2 id="label-License">License</h2>
+
+<p>This script is made available under the terms of the MIT Expat license.
+View <a href="http://sesvxace.wordpress.com/license/">this page</a> for
+more detailed information.</p>
+
+<h2 id="label-Installation">Installation</h2>
+
+<p>Place this script below the SES Core (v2.0) script (if you are using it) or
+the Materials header, but above all other custom scripts. This script does
+not require the SES Core (v2.0), but it is recommended.</p>
+</div></div>
+
+    <div id="footer">
+  Generated on Thu Jul 10 17:51:23 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.4 (ruby-2.1.2).
+</div>
+
+  </body>
+</html>
